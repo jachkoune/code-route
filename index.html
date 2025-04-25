@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #f8f9fa;
+    scroll-behavior: smooth;
+    direction: ltr;
+    font-size: 24px; /* Added base font size */
+  }
+	
+	/* Sticky score display */
+	.sticky-score {
+	  position: fixed;
+	  top: 15px;
+	  left: 15px;
+	  background-color: #007bff;
+	  color: white;
+	  padding: 10px 15px;
+	  border-radius: 6px;
+	  font-weight: bold;
+	  font-size: 18px;
+	  z-index: 1000;
+	  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+	  display: none; /* Hidden by default */
+	}	
+
+  body.rtl {
+    direction: rtl;
+  }
+
+  h1 {
+    text-align: center;
+  }
+
+  .lang-toggle {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 999;
+    font-size: 18px;
+    background: #007bff;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+  }
+
+  .question {
+    background: #fff;
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .option {
+    flex: 1 1 45%;
+    padding: 12px;
+    text-align: center;
+    background-color: #e9ecef;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+    transition: 0.2s ease;
+    font-weight: bold;
+	font-size: 34px;
+  }
+
+  .option.selected {
+    background-color: #28a745;
+    color: white;
+    border-color: #218838;
+  }
+
+  #show-results {
+    display: block;
+    margin: 30px auto;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    background-color: #28a745;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  #show-results:hover {
+    background-color: #218838;
+  }
+
+  #results {
+    max-width: 800px;
+    margin: 30px auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .error-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s ease;
+  }
+
+  .error-btn.active {
+    background-color: #dc3545;
+  }
+
+  .score {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 20px;
+  }
+
+  .scroll-to-results {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #007bff;
+    color: white;
+    padding: 10px 14px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-size: 24px;
+  font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    opacity: 0.8;
+    transition: 0.3s;
+  }
+
+  .scroll-to-results:hover {
+    opacity: 1;
+    background-color: #0056b3;
+
+  }
+  /* Add these new styles for the Go to Top button */
+  #go-top {
+    position: fixed;
+    bottom: 90px;
+    left: 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #go-top:hover {
+    background-color: #0056b3;
+  }
+
+  #go-top.visible {
+    opacity: 0.9;
+    visibility: visible;
+  }
+
+    /* Add these new styles for the Go to Top button */
+#reset-btn-stick {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background-color: #FFEB3B;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  opacity: 0.9; /* Always visible */
+  visibility: visible; /* Always visible */
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Remove these media query styles if they exist */
+#reset-btn-stick.visible {
+  opacity: 0.9;
+  visibility: visible;
+}
+
+  #reset-btn-stick:hover {
+    background-color: #FFEB3B;
+  }
+    h2 {
+      font-size: 34px; /* Larger heading size */
+    }
+	.question h2 {
+  		text-align: default;
+		color: blue;
+
+}
+	
+	#results h2 {
+  		text-align: center;
+		color: blue;
+
+}	
+	.result-item span::after {
+  font-weight: bold;
+  color: green;
+}
+	.response-value {
+	  font-weight: bold;
+	  color: #28a745; /* Or use a specific green like #28a745 */
+	}
+  }
+  @media (max-width: 600px) {
+    body {
+      font-size: 28px; /* Larger base font size for mobile */
+      padding: 15px; /* Slightly reduced padding */
+    }
+	.sticky-score {
+		font-size: 22px; /* Larger for mobile */
+		top: 10px;
+		left: 10px;
+	  }
+    
+    h1 {
+      font-size: 28px; /* Larger heading size */
+    }
+    
+    h2 {
+      font-size: 64px; /* Larger heading size */
+    }
+    h3 {
+      font-size: 64px; /* Larger heading size */
+    }   
+    
+    .option {
+      flex: 1 1 100%;
+      padding: 15px; /* Larger touch targets */
+      font-size: 26px; /* Larger option text */
+    }
+
+    .result-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    
+    #show-results {
+      padding: 15px 30px;
+      font-size: 18px; /* Larger button text */
+    }
+    
+    .score {
+      font-size: 24px; /* Larger score text */
+    }
+    
+    .lang-toggle {
+      font-size: 16px; /* Adjust language toggle size */
+      padding: 8px 14px; /* Larger touch target */
+    }
+  /* Adjust for mobile if needed */
+    #go-top {
+      width: 60px;
+      height: 60px;
+      font-size: 24px;
+    }
+
+     /* Adjust for mobile if needed */
+    #reset-btn-stick {
+      width: 60px;
+      height: 60px;
+      font-size: 24px;
+    } 
+  }
+#result-btn-stick {
+  position: fixed;
+  bottom: 150px;
+  left: 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  opacity: 0.9;
+  visibility: visible;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#result-btn-stick:hover {
+  background-color: #218838;
+}
+
+@media (max-width: 600px) {
+  #result-btn-stick {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    bottom: 160px;
+  }
+}	
+</style>
+</head>
+<body>
+  <div id="sticky-score" class="sticky-score"></div>
+  <button class="lang-toggle" onclick="toggleLanguage()">🇫🇷 / 🇲🇦</button>
+  <h1 id="title">TEST 40 questions</h1>
+  <div id="questions-container"></div>
+  <button id="show-results">Maj/Affichage des résultats</button>
+  <button id="go-top">⬆️</button>
+  <button id="reset-btn-stick">❌</button>  
+  <div id="results"></div>
+  <a href="#results" class="scroll-to-results" id="scroll-link">🔽 Résultats</a>
+    <button id="reset-btn" style="
+	  display: none;	//previous value was was block							  
+      margin: 40px auto 10px auto;
+      padding: 12px 24px;
+      font-size: 26px;
+      font-weight: bold;
+      border: none;
+      background-color: #dc3545;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    ">🔄 Reset</button>
+<br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <script>
+    const totalQuestions = 40;
+    const container = document.getElementById("questions-container");
+    let currentLang = "fr";
+    let resultsDisplayed = false;
+	let errorMarkers = {};	  
+
+    const translations = {
+      fr: {
+        title: "Test 40 questions",
+        showResults: "Maj/Affichage des résultats",
+        resultTitle: "Vos réponses :",
+        response: "Réponse",
+        markError: "Marquer faux",
+        markedError: "Marqué faux",
+        score: "Résultat",
+        scroll: "🔄 Résultats",
+        noAnswer: "Aucune",
+    Reset: "Réinitialiser"  
+      },
+      ar: {
+        title: "اختبار 40 سؤال",
+        showResults: "إظهار/تحديث النتائج",
+        resultTitle: "إجاباتك:",
+        response: "إجابة",
+        markError: "وضع علامة كخطأ",
+        markedError: "تم وضع علامة كخطأ",
+        score: "النتيجة",
+        scroll: "🔄 عرض النتائج",
+        noAnswer: "بدون",
+    Reset: "إعادة ضبط"  
+      }
+    };
+
+    function collectSelections() {
+      const selections = {};
+      document.querySelectorAll('.options').forEach(group => {
+        const questionNum = group.dataset.question;
+        const selected = [...group.querySelectorAll('.selected')].map(opt => opt.dataset.value);
+        selections[questionNum] = selected;
+      });
+      return selections;
+    }
+// Modify the showResults function to respect existing error markers
+function showResults() {
+  resultsDisplayed = true;
+  document.getElementById("sticky-score").style.display = 'block';
+  const resultsContainer = document.getElementById("results");
+  resultsContainer.innerHTML = `<h2>${translations[currentLang].resultTitle}</h2>`;
+
+  const resultsList = document.createElement('div');
+  resultsList.id = 'results-list';
+
+  for (let i = 1; i <= totalQuestions; i++) {
+    const optionsDiv = document.querySelector(`.options[data-question="${i}"]`);
+    const selected = [...optionsDiv.querySelectorAll('.selected')].map(opt => opt.dataset.value);
+
+    const isError = errorMarkers[i] || false;
+    
+    const questionResult = document.createElement('div');
+    questionResult.classList.add('result-item');
+    questionResult.setAttribute('data-question', i);
+	questionResult.innerHTML = `
+	  <span>
+		<strong>${currentLang === "ar" ? "السؤال" : "Question"} ${i}:</strong><br>
+		${currentLang === "ar" ? "إجابة" : "Réponse"} :<br> 
+		${selected.length > 0 
+		  ? `<span class="response-value">${selected.join(', ')}</span>` 
+		  : translations[currentLang].noAnswer
+		}
+	  </span>
+	  <button class="error-btn ${isError ? 'active' : ''}" data-question="${i}">
+		${isError ? translations[currentLang].markedError : translations[currentLang].markError}
+	  </button>
+	`;
+    resultsList.appendChild(questionResult);
+  }
+
+  resultsContainer.appendChild(resultsList);
+
+  const scoreDisplay = document.createElement('div');
+  scoreDisplay.id = "score";
+  scoreDisplay.classList.add("score");
+  resultsContainer.appendChild(scoreDisplay);
+
+  updateScore();
+
+  document.querySelectorAll('.error-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const questionNum = this.dataset.question;
+      errorMarkers[questionNum] = !errorMarkers[questionNum];
+      this.classList.toggle('active');
+      this.textContent = this.classList.contains('active') 
+        ? translations[currentLang].markedError 
+        : translations[currentLang].markError;
+      updateScore();
+    });
+  });
+}
+
+		function updateScore() {
+		  const resultsContainer = document.getElementById("results");
+		  const scoreDisplay = document.getElementById("score");
+		  const stickyScore = document.getElementById("sticky-score");
+
+		  let answeredCount = 0;
+		  let errorCount = 0;
+
+		  // Count answered questions and errors
+		  for (let i = 1; i <= totalQuestions; i++) {
+			const optionsDiv = document.querySelector(`.options[data-question="${i}"]`);
+			const selected = [...optionsDiv.querySelectorAll('.selected')].map(opt => opt.dataset.value);
+
+			if (selected.length > 0) {
+			  answeredCount++;
+			  if (errorMarkers[i]) {
+				errorCount++;
+			  }
+			}
+		  }
+
+		  // Only show score if at least one question answered
+		  if (answeredCount > 0) {
+			const correctCount = answeredCount - errorCount;
+			const scoreText = `${correctCount}/${answeredCount}`;
+
+			// Update both score displays
+			if (scoreDisplay) {
+			  scoreDisplay.textContent = 
+				`${translations[currentLang].score}: ${scoreText}`;
+			}
+
+			if (stickyScore) {
+			  //stickyScore.textContent =  ${currentLang === "ar" ? "السؤال" : "RESULTAT: "} + scoreText;
+				stickyScore.textContent = `${currentLang === "ar" ? "النتيجة: " : "RESULTAT: "}${scoreText}`;
+			  stickyScore.style.display = 'block';
+			}
+		  } else {
+			// Hide sticky score if no questions answered
+			if (stickyScore) {
+			  stickyScore.style.display = 'none';
+			}
+		  }
+		}
+	// Modify the toggleLanguage function to preserve error markers
+	function toggleLanguage() {
+	  const currentSelections = collectSelections();
+	  currentLang = currentLang === "fr" ? "ar" : "fr";
+	  document.body.classList.toggle("rtl", currentLang === "ar");
+	  document.documentElement.lang = currentLang;
+	  renderQuestions(currentSelections);
+	  document.getElementById("title").textContent = translations[currentLang].title;
+	  document.getElementById("show-results").textContent = translations[currentLang].showResults;
+	  document.getElementById("reset-btn").textContent = translations[currentLang].Reset; 
+	  document.getElementById("scroll-link").textContent = translations[currentLang].scroll;
+
+	  if (resultsDisplayed) {
+		showResults();
+	  }
+	  if (document.getElementById("results").innerHTML) {
+		updateScore();
+	  }
+	}
+
+
+
+
+    function renderQuestions(savedSelections = {}) {
+      container.innerHTML = "";
+      for (let i = 1; i <= totalQuestions; i++) {
+        const question = document.createElement("div");
+        question.classList.add("question");
+        question.innerHTML = `
+          <h2>${currentLang === "ar" ? "السؤال" : "Question"} ${i}</h2>
+          <div class="options" data-question="${i}">
+            <div class="option" data-value="1">${translations[currentLang].response} 1</div>
+            <div class="option" data-value="2">${translations[currentLang].response} 2</div>
+            <div class="option" data-value="3">${translations[currentLang].response} 3</div>
+            <div class="option" data-value="4">${translations[currentLang].response} 4</div>
+          </div>
+        `;
+        container.appendChild(question);
+
+        // Apply saved selections if they exist for this question
+        if (savedSelections[i]) {
+          const optionsDiv = question.querySelector('.options');
+          savedSelections[i].forEach(val => {
+            const option = optionsDiv.querySelector(`.option[data-value="${val}"]`);
+            if (option) option.classList.add('selected');
+          });
+        }
+      }
+
+      // Enable multi-select
+      document.querySelectorAll(".options").forEach(group => {
+        group.addEventListener("click", e => {
+          if (!e.target.classList.contains("option")) return;
+          e.target.classList.toggle("selected");
+        });
+      });
+    }
+
+    renderQuestions();
+
+    document.getElementById("show-results").addEventListener("click", () => {
+      resultsDisplayed = true;
+      showResults();
+    });
+    
+	// Update the reset function to clear error markers too
+	document.getElementById("reset-btn").addEventListener("click", () => {
+	  const confirmReset = confirm(currentLang === "ar"
+		? "هل أنت متأكد أنك تريد إعادة تعيين كل الإجابات؟"
+		: "Êtes-vous sûr de vouloir réinitialiser toutes les réponses ?");
+
+	  if (confirmReset) {
+		document.querySelectorAll(".option").forEach(opt => {
+		  opt.classList.remove("selected");
+		});
+		document.getElementById("results").innerHTML = "";
+		// In both reset button event handlers, add this line:
+		document.getElementById("sticky-score").style.display = 'none';
+		resultsDisplayed = false;
+		errorMarkers = {}; // Clear error markers
+		window.scrollTo({ top: 0, behavior: "smooth" });
+	  }
+	});
+  </script>
+  <script>
+  // Add this JavaScript to handle the button behavior
+  document.addEventListener('DOMContentLoaded', function() {
+    const goTopButton = document.getElementById('go-top');
+    
+    // Show/hide the button based on scroll position
+    window.addEventListener('scroll', function() {
+      if (window.pageYOffset > 300) {
+        goTopButton.classList.add('visible');
+      } else {
+        goTopButton.classList.remove('visible');
+      }
+    });
+    
+    // Scroll to top when clicked
+    goTopButton.addEventListener('click', function() {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+  });
+</script>
+	<script>
+  // Add this JavaScript to handle the button behavior
+  document.addEventListener('DOMContentLoaded', function() {
+    const goTopButton = document.getElementById('go-top');
+    const resetStickButton = document.getElementById('reset-btn-stick');
+    
+    // Show/hide the buttons based on scroll position
+    window.addEventListener('scroll', function() {
+      if (window.pageYOffset > 300) {
+        goTopButton.classList.add('visible');
+        //resetStickButton.classList.add('visible');
+      } else {
+        goTopButton.classList.remove('visible');
+        //resetStickButton.classList.remove('visible');
+      }
+    });
+    
+    // Scroll to top when clicked
+    goTopButton.addEventListener('click', function() {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+
+    // Add reset functionality to the sticky button
+    resetStickButton.addEventListener('click', function() {
+      const confirmReset = confirm(currentLang === "ar"
+        ? "هل أنت متأكد أنك تريد مسح كل الإجابات؟"
+        : "Êtes-vous sûr de vouloir réinitialiser toutes les réponses ?");
+
+      if (confirmReset) {
+        // Deselect all options
+        document.querySelectorAll(".option").forEach(opt => {
+          opt.classList.remove("selected");
+        });
+
+        // Clear results
+        document.getElementById("results").innerHTML = "";
+        resultsDisplayed = false;
+    	document.getElementById("sticky-score").style.display = 'none';
+    	document.getElementById("sticky-score").textContent = ''; // Clear the score text  
+    	
+		 // Clear error markers
+    	errorMarkers = {}; // Add this line		  
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    });
+  });
+// Scroll to results link (bottom right corner)
+document.getElementById("scroll-link").addEventListener("click", function(e) {
+  e.preventDefault();
+  resultsDisplayed = true;
+  showResults();
+  document.getElementById("results").scrollIntoView({ behavior: 'smooth' });
+});
+</script>
+</body>
+</html>

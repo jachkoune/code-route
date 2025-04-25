@@ -14,22 +14,22 @@
     direction: ltr;
     font-size: 24px; /* Added base font size */
   }
-	
-	/* Sticky score display */
-	.sticky-score {
-	  position: fixed;
-	  top: 15px;
-	  left: 15px;
-	  background-color: #007bff;
-	  color: white;
-	  padding: 10px 15px;
-	  border-radius: 6px;
-	  font-weight: bold;
-	  font-size: 18px;
-	  z-index: 1000;
-	  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-	  display: none; /* Hidden by default */
-	}	
+  
+  /* Sticky score display */
+  .sticky-score {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 18px;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: none; /* Hidden by default */
+  } 
 
   body.rtl {
     direction: rtl;
@@ -78,7 +78,7 @@
     user-select: none;
     transition: 0.2s ease;
     font-weight: bold;
-	font-size: 34px;
+  font-size: 34px;
   }
 
   .option.selected {
@@ -231,36 +231,36 @@
     h2 {
       font-size: 34px; /* Larger heading size */
     }
-	.question h2 {
-  		text-align: default;
-		color: blue;
+  .question h2 {
+      text-align: default;
+    color: blue;
 
 }
-	
-	#results h2 {
-  		text-align: center;
-		color: blue;
+  
+  #results h2 {
+      text-align: center;
+    color: blue;
 
-}	
-	.result-item span::after {
+} 
+  .result-item span::after {
   font-weight: bold;
   color: green;
 }
-	.response-value {
-	  font-weight: bold;
-	  color: #28a745; /* Or use a specific green like #28a745 */
-	}
+  .response-value {
+    font-weight: bold;
+    color: #28a745; /* Or use a specific green like #28a745 */
+  }
   }
   @media (max-width: 600px) {
     body {
       font-size: 28px; /* Larger base font size for mobile */
       padding: 15px; /* Slightly reduced padding */
     }
-	.sticky-score {
-		font-size: 22px; /* Larger for mobile */
-		top: 10px;
-		left: 10px;
-	  }
+  .sticky-score {
+    font-size: 22px; /* Larger for mobile */
+    top: 10px;
+    left: 10px;
+    }
     
     h1 {
       font-size: 28px; /* Larger heading size */
@@ -344,8 +344,18 @@
     font-size: 24px;
     bottom: 160px;
   }
-}	
+} 
 </style>
+  
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6JMT1XNQR7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6JMT1XNQR7');
+</script> 
 </head>
 <body>
   <div id="sticky-score" class="sticky-score"></div>
@@ -358,7 +368,7 @@
   <div id="results"></div>
   <a href="#results" class="scroll-to-results" id="scroll-link">🔽 Résultats</a>
     <button id="reset-btn" style="
-	  display: none;	//previous value was was block							  
+    display: none;  //previous value was was block                
       margin: 40px auto 10px auto;
       padding: 12px 24px;
       font-size: 26px;
@@ -379,7 +389,7 @@
     const container = document.getElementById("questions-container");
     let currentLang = "fr";
     let resultsDisplayed = false;
-	let errorMarkers = {};	  
+  let errorMarkers = {};    
 
     const translations = {
       fr: {
@@ -436,19 +446,19 @@ function showResults() {
     const questionResult = document.createElement('div');
     questionResult.classList.add('result-item');
     questionResult.setAttribute('data-question', i);
-	questionResult.innerHTML = `
-	  <span>
-		<strong>${currentLang === "ar" ? "السؤال" : "Question"} ${i}:</strong><br>
-		${currentLang === "ar" ? "إجابة" : "Réponse"} :<br> 
-		${selected.length > 0 
-		  ? `<span class="response-value">${selected.join(', ')}</span>` 
-		  : translations[currentLang].noAnswer
-		}
-	  </span>
-	  <button class="error-btn ${isError ? 'active' : ''}" data-question="${i}">
-		${isError ? translations[currentLang].markedError : translations[currentLang].markError}
-	  </button>
-	`;
+  questionResult.innerHTML = `
+    <span>
+    <strong>${currentLang === "ar" ? "السؤال" : "Question"} ${i}:</strong><br>
+    ${currentLang === "ar" ? "إجابة" : "Réponse"} :<br> 
+    ${selected.length > 0 
+      ? `<span class="response-value">${selected.join(', ')}</span>` 
+      : translations[currentLang].noAnswer
+    }
+    </span>
+    <button class="error-btn ${isError ? 'active' : ''}" data-question="${i}">
+    ${isError ? translations[currentLang].markedError : translations[currentLang].markError}
+    </button>
+  `;
     resultsList.appendChild(questionResult);
   }
 
@@ -474,69 +484,69 @@ function showResults() {
   });
 }
 
-		function updateScore() {
-		  const resultsContainer = document.getElementById("results");
-		  const scoreDisplay = document.getElementById("score");
-		  const stickyScore = document.getElementById("sticky-score");
+    function updateScore() {
+      const resultsContainer = document.getElementById("results");
+      const scoreDisplay = document.getElementById("score");
+      const stickyScore = document.getElementById("sticky-score");
 
-		  let answeredCount = 0;
-		  let errorCount = 0;
+      let answeredCount = 0;
+      let errorCount = 0;
 
-		  // Count answered questions and errors
-		  for (let i = 1; i <= totalQuestions; i++) {
-			const optionsDiv = document.querySelector(`.options[data-question="${i}"]`);
-			const selected = [...optionsDiv.querySelectorAll('.selected')].map(opt => opt.dataset.value);
+      // Count answered questions and errors
+      for (let i = 1; i <= totalQuestions; i++) {
+      const optionsDiv = document.querySelector(`.options[data-question="${i}"]`);
+      const selected = [...optionsDiv.querySelectorAll('.selected')].map(opt => opt.dataset.value);
 
-			if (selected.length > 0) {
-			  answeredCount++;
-			  if (errorMarkers[i]) {
-				errorCount++;
-			  }
-			}
-		  }
+      if (selected.length > 0) {
+        answeredCount++;
+        if (errorMarkers[i]) {
+        errorCount++;
+        }
+      }
+      }
 
-		  // Only show score if at least one question answered
-		  if (answeredCount > 0) {
-			const correctCount = answeredCount - errorCount;
-			const scoreText = `${correctCount}/${answeredCount}`;
+      // Only show score if at least one question answered
+      if (answeredCount > 0) {
+      const correctCount = answeredCount - errorCount;
+      const scoreText = `${correctCount}/${answeredCount}`;
 
-			// Update both score displays
-			if (scoreDisplay) {
-			  scoreDisplay.textContent = 
-				`${translations[currentLang].score}: ${scoreText}`;
-			}
+      // Update both score displays
+      if (scoreDisplay) {
+        scoreDisplay.textContent = 
+        `${translations[currentLang].score}: ${scoreText}`;
+      }
 
-			if (stickyScore) {
-			  //stickyScore.textContent =  ${currentLang === "ar" ? "السؤال" : "RESULTAT: "} + scoreText;
-				stickyScore.textContent = `${currentLang === "ar" ? "النتيجة: " : "RESULTAT: "}${scoreText}`;
-			  stickyScore.style.display = 'block';
-			}
-		  } else {
-			// Hide sticky score if no questions answered
-			if (stickyScore) {
-			  stickyScore.style.display = 'none';
-			}
-		  }
-		}
-	// Modify the toggleLanguage function to preserve error markers
-	function toggleLanguage() {
-	  const currentSelections = collectSelections();
-	  currentLang = currentLang === "fr" ? "ar" : "fr";
-	  document.body.classList.toggle("rtl", currentLang === "ar");
-	  document.documentElement.lang = currentLang;
-	  renderQuestions(currentSelections);
-	  document.getElementById("title").textContent = translations[currentLang].title;
-	  document.getElementById("show-results").textContent = translations[currentLang].showResults;
-	  document.getElementById("reset-btn").textContent = translations[currentLang].Reset; 
-	  document.getElementById("scroll-link").textContent = translations[currentLang].scroll;
+      if (stickyScore) {
+        //stickyScore.textContent =  ${currentLang === "ar" ? "السؤال" : "RESULTAT: "} + scoreText;
+        stickyScore.textContent = `${currentLang === "ar" ? "النتيجة: " : "RESULTAT: "}${scoreText}`;
+        stickyScore.style.display = 'block';
+      }
+      } else {
+      // Hide sticky score if no questions answered
+      if (stickyScore) {
+        stickyScore.style.display = 'none';
+      }
+      }
+    }
+  // Modify the toggleLanguage function to preserve error markers
+  function toggleLanguage() {
+    const currentSelections = collectSelections();
+    currentLang = currentLang === "fr" ? "ar" : "fr";
+    document.body.classList.toggle("rtl", currentLang === "ar");
+    document.documentElement.lang = currentLang;
+    renderQuestions(currentSelections);
+    document.getElementById("title").textContent = translations[currentLang].title;
+    document.getElementById("show-results").textContent = translations[currentLang].showResults;
+    document.getElementById("reset-btn").textContent = translations[currentLang].Reset; 
+    document.getElementById("scroll-link").textContent = translations[currentLang].scroll;
 
-	  if (resultsDisplayed) {
-		showResults();
-	  }
-	  if (document.getElementById("results").innerHTML) {
-		updateScore();
-	  }
-	}
+    if (resultsDisplayed) {
+    showResults();
+    }
+    if (document.getElementById("results").innerHTML) {
+    updateScore();
+    }
+  }
 
 
 
@@ -583,24 +593,24 @@ function showResults() {
       showResults();
     });
     
-	// Update the reset function to clear error markers too
-	document.getElementById("reset-btn").addEventListener("click", () => {
-	  const confirmReset = confirm(currentLang === "ar"
-		? "هل أنت متأكد أنك تريد إعادة تعيين كل الإجابات؟"
-		: "Êtes-vous sûr de vouloir réinitialiser toutes les réponses ?");
+  // Update the reset function to clear error markers too
+  document.getElementById("reset-btn").addEventListener("click", () => {
+    const confirmReset = confirm(currentLang === "ar"
+    ? "هل أنت متأكد أنك تريد إعادة تعيين كل الإجابات؟"
+    : "Êtes-vous sûr de vouloir réinitialiser toutes les réponses ?");
 
-	  if (confirmReset) {
-		document.querySelectorAll(".option").forEach(opt => {
-		  opt.classList.remove("selected");
-		});
-		document.getElementById("results").innerHTML = "";
-		// In both reset button event handlers, add this line:
-		document.getElementById("sticky-score").style.display = 'none';
-		resultsDisplayed = false;
-		errorMarkers = {}; // Clear error markers
-		window.scrollTo({ top: 0, behavior: "smooth" });
-	  }
-	});
+    if (confirmReset) {
+    document.querySelectorAll(".option").forEach(opt => {
+      opt.classList.remove("selected");
+    });
+    document.getElementById("results").innerHTML = "";
+    // In both reset button event handlers, add this line:
+    document.getElementById("sticky-score").style.display = 'none';
+    resultsDisplayed = false;
+    errorMarkers = {}; // Clear error markers
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  });
   </script>
   <script>
   // Add this JavaScript to handle the button behavior
@@ -625,7 +635,7 @@ function showResults() {
     });
   });
 </script>
-	<script>
+  <script>
   // Add this JavaScript to handle the button behavior
   document.addEventListener('DOMContentLoaded', function() {
     const goTopButton = document.getElementById('go-top');
@@ -665,11 +675,11 @@ function showResults() {
         // Clear results
         document.getElementById("results").innerHTML = "";
         resultsDisplayed = false;
-    	document.getElementById("sticky-score").style.display = 'none';
-    	document.getElementById("sticky-score").textContent = ''; // Clear the score text  
-    	
-		 // Clear error markers
-    	errorMarkers = {}; // Add this line		  
+      document.getElementById("sticky-score").style.display = 'none';
+      document.getElementById("sticky-score").textContent = ''; // Clear the score text  
+      
+     // Clear error markers
+      errorMarkers = {}; // Add this line     
 
         // Scroll to top
         window.scrollTo({ top: 0, behavior: "smooth" });

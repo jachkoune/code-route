@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Test sans Correction</title>
+  <title>اختبار بدون تصحيح</title>
 <style>
   body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -445,7 +445,7 @@
 
     const translations = {
       fr: {
-        title: "Test 40 questions",
+        title: "Test sans corrigé",
         showResults: "Maj/Affichage des résultats",
         resultTitle: "Vos réponses :",
         response: "Réponse",
@@ -454,10 +454,11 @@
         score: "Résultat",
         scroll: "🔄 Résultats",
         noAnswer: "Aucune",
-        Reset: "Réinitialiser"
+        Reset: "Réinitialiser",
+		Pagetitle : "Test sans corrigé" // French page title		  
       },
       ar: {
-        title: "اختبار 40 سؤال",
+        title: "اختبار بدون تصحيح",
         showResults: "إظهار/تحديث النتائج",
         resultTitle: "إجاباتك:",
         response: "إجابة",
@@ -466,7 +467,9 @@
         score: "النتيجة",
         scroll: "🔄 عرض النتائج",
         noAnswer: "بدون",
-        Reset: "إعادة ضبط"
+        Reset: "إعادة ضبط",
+        Pagetitle : "اختبار بدون تصحيح" // Arabic page title
+		  
       }
     };
 	  
@@ -616,6 +619,7 @@
       document.getElementById("show-results").textContent = translations[currentLang].showResults;
       document.getElementById("reset-btn").textContent = translations[currentLang].Reset; 
       document.getElementById("scroll-link").textContent = translations[currentLang].scroll;
+		document.title = translations[currentLang].Pagetitle;
 
       if (resultsDisplayed) {
         showResults();

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Test avec Correction</title>
+  <title>إختبار بالتصحيح</title>
 <style>
   body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -1032,7 +1032,8 @@
         Reset: "Réinitialiser",
         selectSeries: "Sélectionnez une série (1-26)",
         correctAnswer: "Réponse correcte",
-        currentSeries: "Série"
+        currentSeries: "Série",
+		Pagetitle : "Test corrigé" // French page title
       },
       ar: {
         title: "اختبار 40 سؤال",
@@ -1047,7 +1048,8 @@
         Reset: "إعادة ضبط",
         selectSeries: "اختر سلسلة (1-26)",
         correctAnswer: "الجواب الصحيح",
-        currentSeries: "السلسلة"
+        currentSeries: "السلسلة",
+		Pagetitle : "إختبار بالتصحيح" // Arabic page title		  
       }
     };
 
@@ -1193,6 +1195,7 @@
       document.getElementById("reset-btn").textContent = translations[currentLang].Reset; 
       document.getElementById("scroll-link").textContent = translations[currentLang].scroll;
       document.getElementById("series-title").textContent = translations[currentLang].selectSeries;
+		document.title = translations[currentLang].Pagetitle;
 
       // Update current series display if visible
       const seriesDisplay = document.getElementById("current-series-display");

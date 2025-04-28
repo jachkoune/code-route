@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Test sans Correction</title>
+<style>
+  body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f8f9fa;
+      scroll-behavior: smooth;
+      direction: ltr;
+      font-size: 24px;
+      /* Added base font size */
+  }
+
+  /* Sticky score display */
+  .sticky-score {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background-color: #007bff;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 18px;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      display: none;
+      /* Hidden by default */
+  }
+
+  body.rtl {
+      direction: rtl;
+  }
+
+  h1 {
+      text-align: center;
+  }
+
+  .lang-toggle {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      z-index: 999;
+      font-size: 18px;
+      background: #007bff;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+  }
+
+  .question {
+      background: #fff;
+      border-radius: 8px;
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  .question {
+    scroll-margin-top: 120px; /* This creates an offset when scrolling to the element */
+  } 
+
+  .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+  }
+
+  .option {
+      flex: 1 1 45%;
+      padding: 12px;
+      text-align: center;
+      background-color: #e9ecef;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+      transition: 0.2s ease;
+      font-weight: bold;
+      font-size: 34px;
+  }
+
+  .option.selected {
+      background-color: #28a745;
+      color: white;
+      border-color: #218838;
+  }
+
+  #show-results {
+      display: block;
+      margin: 30px auto;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      background-color: #28a745;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+  }
+
+  #show-results:hover {
+      background-color: #218838;
+  }
+
+  #results {
+      max-width: 800px;
+      margin: 30px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  #results {
+    scroll-margin-top: 120px; /* Same as questions for consistency */
+  } 
+
+  .result-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+  }
+
+  .error-btn {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s ease;
+  }
+
+  .error-btn.active {
+      background-color: #dc3545;
+  }
+
+  .score {
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 20px;
+  }
+
+  .scroll-to-results {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #007bff;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      opacity: 0.8;
+      transition: 0.3s;
+      display: block;
+  }
+
+  .scroll-to-results:hover {
+      opacity: 1;
+      background-color: #0056b3;
+  }
+
+  /* Go to Top button */
+  #go-top {
+      position: fixed;
+      bottom: 90px;
+      left: 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+
+  #go-top:hover {
+      background-color: #0056b3;
+  }
+
+  #go-top.visible {
+      opacity: 0.9;
+      visibility: visible;
+  }
+  /* Adjust go-top position to make space for next-question */
+  #go-top {
+      bottom: 90px;
+      /* Changed from 90px to make space */
+  }
+  /* Reset button */
+  #reset-btn-stick {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background-color: #FFEB3B;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      opacity: 0.9;
+      visibility: visible;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+
+  #reset-btn-stick:hover {
+      background-color: #FFEB3B;
+  }
+
+  h2 {
+      font-size: 34px;
+  }
+
+  .question h2 {
+      text-align: default;
+      color: blue;
+  }
+
+  #results h2 {
+      text-align: center;
+      color: blue;
+  }
+
+  .response-value {
+      font-weight: bold;
+  }
+
+  /* Answer highlighting */
+  .correct {
+      color: #28a745;
+      font-weight: bold;
+  }
+
+  .incorrect {
+      color: #dc3545;
+      font-weight: bold;
+  }
+
+  .correct-answer {
+      color: #17a2b8;
+      font-weight: bold;
+  }
+
+  /* Next Question button */
+  #next-question {
+      position: fixed;
+      bottom: 180px;
+      left: 10px;
+      background-color: #008000;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      opacity: 0.9;
+      visibility: visible;
+      transition: all 0.3s ease;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+
+  #next-question:hover {
+      background-color: #006400 ;
+  }
+
+  #next-question.visible {
+    display: flex;
+    opacity: 0.9;
+    visibility: visible;
+  }
+
+  @media (max-width: 600px) {
+      body {
+          font-size: 28px;
+          padding: 15px;
+      }
+
+      .sticky-score {
+          font-size: 22px;
+          top: 10px;
+          left: 10px;
+      }
+
+      h1 {
+          font-size: 28px;
+      }
+
+      h2 {
+          font-size: 26px;
+      }
+
+      h3 {
+          font-size: 24px;
+      }
+
+      .option {
+          flex: 1 1 100%;
+          padding: 15px;
+          font-size: 36px;
+      }
+
+      .result-item {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+      }
+
+      #show-results {
+          padding: 15px 30px;
+          font-size: 18px;
+      }
+
+      .score {
+          font-size: 24px;
+      }
+
+      .lang-toggle {
+          font-size: 16px;
+          padding: 8px 14px;
+      }
+
+      #go-top {
+          width: 60px;
+          height: 60px;
+          font-size: 24px;
+      }
+      #next-question {
+          width: 80px;
+          height: 80px;
+          font-size: 24px;
+      }
+      #reset-btn-stick {
+          width: 60px;
+          height: 60px;
+          font-size: 24px;
+      }
+
+      .series-btn {
+          padding: 15px 20px;
+          font-size: 24px;
+      }
+    
+  .question {
+    scroll-margin-top: 140px; /* Larger offset for mobile */
+      }
+    #results {
+        scroll-margin-top: 140px; /* Larger offset for mobile */
+    }   
+  }
+/* Add this to your CSS */
+#next-question.visible {
+  display: flex !important;
+  opacity: 0.9;
+  visibility: visible;
+}
+  .home-button {
+	  position: fixed;
+	  top: 10px;
+	  right: 80px;
+	  transform: translateX(-50%);
+	  background: none;
+	  border: none;
+	  cursor: pointer;
+	  font-size: 2rem;
+	  z-index: 1000;
+  }
+  .home-button:hover {
+    opacity: 0.7;
+  }
+	
+</style>
+  
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6JMT1XNQR7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6JMT1XNQR7');
+</script> 
+</head>
+<body>
+  <button class="home-button" id="home-button" title="Home">🏠</button>
+
+	
+  <div id="sticky-score" class="sticky-score"></div>
+  <button class="lang-toggle" onclick="toggleLanguage()">🇫🇷 / 🇲🇦</button>
+  <h1 id="title">TEST 40 questions</h1>
+  
+  <div id="questions-container"></div>
+  <button id="show-results">إظهار/تحديث النتائج</button>
+  <button id="next-question">➡️</button>
+  <button id="go-top">⬆️</button>
+  <button id="reset-btn-stick">❌</button>  
+  <div id="results" style="display: none;"></div>
+  <a href="#results" class="scroll-to-results" id="scroll-link">🔽 النتيجة</a>
+  <button id="reset-btn" style="display: none; margin: 40px auto 10px auto; padding: 12px 24px; font-size: 26px; font-weight: bold; border: none; background-color: #dc3545; color: white; border-radius: 6px; cursor: pointer;">🔄 إعادة ضبط</button>
+  <br><br><br><br><br>
+
+  <script>
+  	let nextQuestionButton; // Declare in global scope
+	const homeButton = document.getElementById('home-button');
+    const totalQuestions = 40;
+    const container = document.getElementById("questions-container");
+    let currentLang = "ar";
+    let resultsDisplayed = false;
+    let errorMarkers = {};    
+
+    const translations = {
+      fr: {
+        title: "Test 40 questions",
+        showResults: "Maj/Affichage des résultats",
+        resultTitle: "Vos réponses :",
+        response: "Réponse",
+        markError: "Marquer faux",
+        markedError: "Marqué faux",
+        score: "Résultat",
+        scroll: "🔄 Résultats",
+        noAnswer: "Aucune",
+        Reset: "Réinitialiser"
+      },
+      ar: {
+        title: "اختبار 40 سؤال",
+        showResults: "إظهار/تحديث النتائج",
+        resultTitle: "إجاباتك:",
+        response: "إجابة",
+        markError: "وضع علامة كخطأ",
+        markedError: "تم وضع علامة كخطأ",
+        score: "النتيجة",
+        scroll: "🔄 عرض النتائج",
+        noAnswer: "بدون",
+        Reset: "إعادة ضبط"
+      }
+    };
+	  
+	// 🏠 Home button with confirmation
+	homeButton.addEventListener('click', () => {
+	  const confirmMessage = currentLang === 'ar'
+		? 'هل أنت متأكد أنك تريد العودة إلى القائمة الرئيسية ؟'
+		: 'Êtes-vous sûr de vouloir revenir au menu principal ?';
+
+	  if (confirm(confirmMessage)) {
+		location.href = '../';
+	  }
+	});	  
+
+    function collectSelections() {
+      const selections = {};
+      document.querySelectorAll('.options').forEach(group => {
+        const questionNum = group.dataset.question;
+        const selected = [...group.querySelectorAll('.selected')].map(opt => opt.dataset.value);
+        selections[questionNum] = selected;
+      });
+      return selections;
+    }
+
+    function showResults() {
+      resultsDisplayed = true;
+      document.getElementById("sticky-score").style.display = 'block';
+      const resultsContainer = document.getElementById("results");
+      resultsContainer.style.display = 'block';    
+      resultsContainer.innerHTML = `<h2>${translations[currentLang].resultTitle}</h2>`;
+
+      const resultsList = document.createElement('div');
+      resultsList.id = 'results-list';
+
+      let answeredCount = 0;
+      let correctCount = 0;
+
+      for (let i = 1; i <= totalQuestions; i++) {
+        const optionsDiv = document.querySelector(`.options[data-question="${i}"]`);
+        const selected = [...optionsDiv.querySelectorAll('.selected')].map(opt => opt.dataset.value);
+        const isError = errorMarkers[i] || false;
+
+        if (selected.length > 0) {
+          answeredCount++;
+          if (!isError) {
+            correctCount++;
+          }
+        }
+
+        const questionResult = document.createElement('div');
+        questionResult.classList.add('result-item');
+        questionResult.setAttribute('data-question', i);
+        questionResult.innerHTML = `
+          <span>
+            <strong>${currentLang === "ar" ? "السؤال" : "Question"} ${i}:</strong><br>
+            ${currentLang === "ar" ? "إجابة" : "Réponse"} : 
+            ${selected.length > 0 
+              ? `<span class="response-value ${isError ? 'incorrect' : 'correct'}">${selected.join(', ')}</span>` 
+              : translations[currentLang].noAnswer
+            }
+          </span>
+          <button class="error-btn ${isError ? 'active' : ''}" data-question="${i}">
+            ${isError ? translations[currentLang].markedError : translations[currentLang].markError}
+          </button>
+        `;
+        resultsList.appendChild(questionResult);
+      }
+
+      resultsContainer.appendChild(resultsList);
+
+      const scoreDisplay = document.createElement('div');
+      scoreDisplay.id = "score";
+      scoreDisplay.classList.add("score");
+      scoreDisplay.textContent = 
+        `${translations[currentLang].score}: ${correctCount}/${answeredCount}`;
+      resultsContainer.appendChild(scoreDisplay);
+
+      // Update sticky score
+      const stickyScore = document.getElementById("sticky-score");
+      if (answeredCount > 0) {
+        stickyScore.textContent = `${currentLang === "ar" ? "النتيجة: " : "RESULTAT: "}${correctCount}/${answeredCount}`;
+        stickyScore.style.display = 'block';
+      } else {
+        stickyScore.style.display = 'none';
+      }
+
+      document.querySelectorAll('.error-btn').forEach(button => {
+        button.addEventListener('click', function() {
+          const questionNum = this.dataset.question;
+          errorMarkers[questionNum] = !errorMarkers[questionNum];
+          this.classList.toggle('active');
+          this.textContent = this.classList.contains('active') 
+            ? translations[currentLang].markedError 
+            : translations[currentLang].markError;
+          updateScore();
+        });
+      });
+    }
+
+    function updateScore() {
+      const resultsContainer = document.getElementById("results");
+      const scoreDisplay = document.getElementById("score");
+      const stickyScore = document.getElementById("sticky-score");
+
+      let answeredCount = 0;
+      let correctCount = 0;
+
+      for (let i = 1; i <= totalQuestions; i++) {
+        const optionsDiv = document.querySelector(`.options[data-question="${i}"]`);
+        const selected = [...optionsDiv.querySelectorAll('.selected')].map(opt => opt.dataset.value);
+        const isError = errorMarkers[i] || false;
+
+        if (selected.length > 0) {
+          answeredCount++;
+          if (!isError) {
+            correctCount++;
+          }
+        }
+      }
+
+      if (answeredCount > 0) {
+        const scoreText = `${correctCount}/${answeredCount}`;
+
+        if (scoreDisplay) {
+          scoreDisplay.textContent = 
+            `${translations[currentLang].score}: ${scoreText}`;
+        }
+
+        if (stickyScore) {
+          stickyScore.textContent = `${currentLang === "ar" ? "النتيجة: " : "RESULTAT: "}${scoreText}`;
+          stickyScore.style.display = 'block';
+        }
+      } else {
+        if (stickyScore) {
+          stickyScore.style.display = 'none';
+        }
+      }
+    }
+
+    function toggleLanguage() {
+      const currentSelections = collectSelections();
+      currentLang = currentLang === "fr" ? "ar" : "fr";
+      document.body.classList.toggle("rtl", currentLang === "ar");
+      document.documentElement.lang = currentLang;
+      renderQuestions(currentSelections);
+      document.getElementById("title").textContent = translations[currentLang].title;
+      document.getElementById("show-results").textContent = translations[currentLang].showResults;
+      document.getElementById("reset-btn").textContent = translations[currentLang].Reset; 
+      document.getElementById("scroll-link").textContent = translations[currentLang].scroll;
+
+      if (resultsDisplayed) {
+        showResults();
+      }
+      if (document.getElementById("results").innerHTML) {
+        updateScore();
+      }
+    }
+
+    function renderQuestions(savedSelections = {}) {
+      container.innerHTML = "";
+      for (let i = 1; i <= totalQuestions; i++) {
+        const question = document.createElement("div");
+        question.classList.add("question");
+        question.innerHTML = `
+          <h2>${currentLang === "ar" ? "السؤال" : "Question"} ${i}</h2>
+          <div class="options" data-question="${i}">
+            <div class="option" data-value="1">${translations[currentLang].response} 1</div>
+            <div class="option" data-value="2">${translations[currentLang].response} 2</div>
+            <div class="option" data-value="3">${translations[currentLang].response} 3</div>
+            <div class="option" data-value="4">${translations[currentLang].response} 4</div>
+          </div>
+        `;
+        container.appendChild(question);
+
+        if (savedSelections[i]) {
+          const optionsDiv = question.querySelector('.options');
+          savedSelections[i].forEach(val => {
+            const option = optionsDiv.querySelector(`.option[data-value="${val}"]`);
+            if (option) option.classList.add('selected');
+          });
+        }
+      }
+
+      document.querySelectorAll(".options").forEach(group => {
+        group.addEventListener("click", e => {
+          if (!e.target.classList.contains("option")) return;
+          e.target.classList.toggle("selected");
+        });
+      });
+    }
+
+    function resetQuiz() {
+      const confirmReset = confirm(currentLang === "ar"
+        ? "هل أنت متأكد أنك تريد مسح كل الإجابات؟"
+        : "Êtes-vous sûr de vouloir réinitialiser toutes les réponses ?");
+
+      if (confirmReset) {
+        document.querySelectorAll(".option").forEach(opt => {
+          opt.classList.remove("selected");
+        });
+        document.getElementById("results").innerHTML = "";
+        document.getElementById("results").style.display = 'none';
+        resultsDisplayed = false;
+        document.getElementById("sticky-score").style.display = 'none';
+        document.getElementById("sticky-score").textContent = '';
+        errorMarkers = {};
+        document.getElementById("reset-btn").style.display = "none";
+        
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize the button reference
+      nextQuestionButton = document.getElementById('next-question');
+        
+      // Set Arabic as default language
+      document.body.classList.add("rtl");
+      document.documentElement.lang = "ar";
+      document.getElementById("title").textContent = translations[currentLang].title;
+      document.getElementById("show-results").textContent = translations[currentLang].showResults;    
+
+      renderQuestions();
+      
+      document.getElementById("show-results").addEventListener("click", () => {
+          resultsDisplayed = true;
+          document.getElementById("results").style.display = 'block';      
+          showResults();
+      });
+      
+      document.getElementById("reset-btn").addEventListener("click", function() {
+          resetQuiz();
+          this.style.display = "none"; // Hide the button immediately after click     
+      });
+
+      const goTopButton = document.getElementById('go-top');
+      const resetStickButton = document.getElementById('reset-btn-stick');
+
+      function getCurrentQuestionInView() {
+          const questions = document.querySelectorAll('.question');
+          const scrollPosition = window.scrollY + (window.innerHeight / 3);
+          
+          for (let i = 0; i < questions.length; i++) {
+              const rect = questions[i].getBoundingClientRect();
+              const questionTop = rect.top + window.scrollY;
+              const questionBottom = questionTop + rect.height;
+              
+              if (scrollPosition >= questionTop && scrollPosition <= questionBottom) {
+                  return i + 1; // Questions are 1-based
+              }
+          }
+          return 1; // Default to first question if none found
+      }
+
+      nextQuestionButton.addEventListener('click', function() {
+          const currentQuestion = getCurrentQuestionInView();
+          const nextQuestion = Math.min(currentQuestion + 1, totalQuestions);
+          const questionElement = document.querySelector(`.question:nth-child(${nextQuestion})`);
+
+          if (questionElement) {
+            // Calculate the offset needed to account for sticky elements
+            const stickyOffset = 40; // Adjust this value as needed
+            const elementPosition = questionElement.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - stickyOffset;
+
+            window.scrollTo({ 
+              top: offsetPosition,
+              behavior: 'smooth'
+            });
+          }
+        });
+
+        // Show/hide next question button based on scroll
+        window.addEventListener('scroll', function() {
+            if (window.pageYOffset > 300) {
+                nextQuestionButton.classList.add('visible');
+                goTopButton.classList.add('visible');
+            } else {
+                goTopButton.classList.remove('visible');
+            }
+        });
+        
+        goTopButton.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        resetStickButton.addEventListener('click', function() {
+            resetQuiz();
+        });
+
+        document.getElementById("scroll-link").addEventListener("click", function(e) {
+            e.preventDefault();
+            resultsDisplayed = true;
+            document.getElementById("results").style.display = 'block';      
+            showResults();
+            document.getElementById("reset-btn").style.display = "block"; // Show the reset button
+            document.getElementById("results").scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+  </script>
+</body>
+</html>

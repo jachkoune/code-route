@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Test avec Correction</title>
+<style>
+  body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f8f9fa;
+      scroll-behavior: smooth;
+      direction: ltr;
+      font-size: 24px;
+      /* Added base font size */
+  }
+
+  /* Sticky score display */
+  .sticky-score {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background-color: #007bff;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 18px;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      display: none;
+      /* Hidden by default */
+  }
+
+  body.rtl {
+      direction: rtl;
+  }
+
+  h1 {
+      text-align: center;
+  }
+
+  .lang-toggle {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      z-index: 999;
+      font-size: 18px;
+      background: #007bff;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+  }
+
+  .question {
+      background: #fff;
+      border-radius: 8px;
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  .question {
+    scroll-margin-top: 120px; /* This creates an offset when scrolling to the element */
+  } 
+
+  .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+  }
+
+  .option {
+      flex: 1 1 45%;
+      padding: 12px;
+      text-align: center;
+      background-color: #e9ecef;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+      transition: 0.2s ease;
+      font-weight: bold;
+      font-size: 34px;
+  }
+
+  .option.selected {
+      background-color: #28a745;
+      color: white;
+      border-color: #218838;
+  }
+
+  #show-results {
+      display: none;
+      margin: 30px auto;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      background-color: #28a745;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+  }
+
+  #show-results:hover {
+      background-color: #218838;
+  }
+
+  #results {
+      max-width: 800px;
+      margin: 30px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  #results {
+    scroll-margin-top: 120px; /* Same as questions for consistency */
+  } 
+
+  .result-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+  }
+
+  .error-btn {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s ease;
+  }
+
+  .error-btn.active {
+      background-color: #dc3545;
+  }
+
+  .score {
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 20px;
+  }
+
+  .scroll-to-results {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #007bff;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      opacity: 0.8;
+      transition: 0.3s;
+      display: none;
+  }
+
+  .scroll-to-results:hover {
+      opacity: 1;
+      background-color: #0056b3;
+  }
+
+  /* Go to Top button */
+  #go-top {
+      position: fixed;
+      bottom: 90px;
+      left: 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+
+  #go-top:hover {
+      background-color: #0056b3;
+  }
+
+  #go-top.visible {
+      opacity: 0.9;
+      visibility: visible;
+  }
+  /* Adjust go-top position to make space for next-question */
+  #go-top {
+      bottom: 90px;
+      /* Changed from 90px to make space */
+  }
+  /* Reset button */
+  #reset-btn-stick {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background-color: #FFEB3B;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      opacity: 0.9;
+      visibility: visible;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+
+  #reset-btn-stick:hover {
+      background-color: #FFEB3B;
+  }
+
+  h2 {
+      font-size: 34px;
+  }
+
+  .question h2 {
+      text-align: default;
+      color: blue;
+  }
+
+  #results h2 {
+      text-align: center;
+      color: blue;
+  }
+
+  .response-value {
+      font-weight: bold;
+  }
+
+  /* Series selection styles */
+  .series-selector {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      text-align: center;
+  }
+
+  .series-btn {
+      display: inline-block;
+      margin: 5px;
+      padding: 10px 15px;
+      background: #007bff;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 18px;
+  }
+
+  .series-btn:hover {
+      background: #0056b3;
+  }
+
+  /* Answer highlighting */
+  .correct {
+      color: #28a745;
+      font-weight: bold;
+  }
+
+  .incorrect {
+      color: #dc3545;
+      font-weight: bold;
+  }
+
+  .correct-answer {
+      color: #17a2b8;
+      font-weight: bold;
+  }
+
+  /* Current series display */
+  .current-series {
+      text-align: center;
+      font-size: 28px;
+      margin: 10px 0 30px;
+      color: #007bff;
+      font-weight: bold;
+  }
+
+  /* Next Question button */
+  #next-question {
+      position: fixed;
+      bottom: 180px;
+      left: 10px;
+      background-color: #008000;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+
+  #next-question:hover {
+      background-color: #006400 ;
+  }
+
+  #next-question.visible {
+    display: flex;
+    opacity: 0.9;
+    visibility: visible;
+  }
+
+
+
+  @media (max-width: 600px) {
+      body {
+          font-size: 28px;
+          padding: 15px;
+      }
+
+      .sticky-score {
+          font-size: 22px;
+          top: 10px;
+          left: 10px;
+      }
+
+      h1 {
+          font-size: 28px;
+      }
+
+      h2 {
+          font-size: 26px;
+      }
+
+      h3 {
+          font-size: 24px;
+      }
+
+      .option {
+          flex: 1 1 100%;
+          padding: 15px;
+          font-size: 36px;
+      }
+
+      .result-item {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+      }
+
+      #show-results {
+          padding: 15px 30px;
+          font-size: 18px;
+      }
+
+      .score {
+          font-size: 24px;
+      }
+
+      .lang-toggle {
+          font-size: 16px;
+          padding: 8px 14px;
+      }
+
+      #go-top {
+          width: 60px;
+          height: 60px;
+          font-size: 24px;
+      }
+      #next-question {
+          width: 80px;
+          height: 80px;
+          font-size: 24px;
+      }
+      #reset-btn-stick {
+          width: 60px;
+          height: 60px;
+          font-size: 24px;
+      }
+
+      .series-btn {
+          padding: 15px 20px;
+          font-size: 24px;
+      }
+
+      .current-series {
+          font-size: 32px;
+      }
+    
+  .question {
+    scroll-margin-top: 140px; /* Larger offset for mobile */
+      }
+    #results {
+        scroll-margin-top: 140px; /* Larger offset for mobile */
+    }   
+  }
+/* Add this to your CSS */
+#next-question.visible {
+  display: flex !important;
+  opacity: 0.9;
+  visibility: visible;
+}
+	.home-button {
+		position: fixed;
+		top: 10px;
+		right: 80px;
+		transform: translateX(-50%);
+		background: none;
+		border: none;
+		cursor: pointer;
+		font-size: 2rem;
+		z-index: 1000;
+	}
+	.home-button:hover {
+		opacity: 0.7;
+	}	
+</style>
+  
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6JMT1XNQR7"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-6JMT1XNQR7');
+</script> 
+</head>
+<body>
+  <button class="home-button" id="home-button" title="Home">🏠</button>
+	
+  <div id="sticky-score" class="sticky-score"></div>
+  <button class="lang-toggle" onclick="toggleLanguage()">🇫🇷 / 🇲🇦</button>
+  <h1 id="title">TEST 40 questions</h1>
+  <div id="current-series-display" class="current-series" style="display: none;"></div>
+  
+  <!-- Series selection interface -->
+  <div id="series-selector" class="series-selector">
+    <h3 id="series-title">اختر سلسلة (1-26)</h3>
+    <div id="series-buttons"></div>
+  </div>
+  
+  <div id="questions-container" style="display: none;"></div>
+  <button id="show-results">إظهار/تحديث النتائج</button>
+  <button id="next-question">➡️</button>
+  <button id="go-top">⬆️</button>
+  <button id="reset-btn-stick">❌</button>  
+  <div id="results" style="display: none;"></div>
+  <a href="#results" class="scroll-to-results" id="scroll-link">🔽 النتيجة</a>
+  <button id="reset-btn" style="display: none; margin: 40px auto 10px auto; padding: 12px 24px; font-size: 26px; font-weight: bold; border: none; background-color: #dc3545; color: white; border-radius: 6px; cursor: pointer;">🔄 إعادة ضبط</button>
+  <br><br><br><br><br>
+
+  <script>
+	const homeButton = document.getElementById('home-button');
+	let nextQuestionButton; // Declare in global scope
+    const totalQuestions = 40;
+    const container = document.getElementById("questions-container");
+    let currentLang = "ar";
+    let resultsDisplayed = false;
+    let errorMarkers = {};    
+    let currentSeries = 1;
+
+	  // 🏠 Home button with confirmation
+		homeButton.addEventListener('click', () => {
+		  const confirmMessage = currentLang === 'ar'
+			? 'هل أنت متأكد أنك تريد العودة إلى القائمة الرئيسية ؟'
+			: 'Êtes-vous sûr de vouloir revenir au menu principal ?';
+
+		  if (confirm(confirmMessage)) {
+			location.href = '../';
+		  }
+		});
+    // Correct answers for all series (1-26)
+    const correctAnswers = {
+      1: {
+        1: ["2"],
+        2: ["3"],
+        3: ["2"],
+        4: ["1"],
+        5: ["2"],
+        6: ["3"],
+        7: ["2"],
+        8: ["1"],
+        9: ["2"],
+        10: ["3"],
+        11: ["1"],
+        12: ["2"],
+        13: ["3"],
+        14: ["1"],
+        15: ["1", "4"],
+        16: ["2"],
+        17: ["3"],
+        18: ["2"],
+        19: ["1"],
+        20: ["2"],
+        21: ["2", "4"],
+        22: ["2"],
+        23: ["1"],
+        24: ["2"],
+        25: ["1", "3"],
+        26: ["1"],
+        27: ["2"],
+        28: ["1"],
+        29: ["1", "4"],
+        30: ["2"],
+        31: ["2"],
+        32: ["2"],
+        33: ["1"],
+        34: ["1"],
+        35: ["2"],
+        36: ["1"],
+        37: ["2", "3"],
+        38: ["2", "3"],
+        39: ["1"],
+        40: ["3", "2"]
+      },
+      2: {
+        1: ["2"],
+        2: ["1"],
+        3: ["2"],
+        4: ["1"],
+        5: ["1"],
+        6: ["1"],
+        7: ["2"],
+        8: ["1"],
+        9: ["2"],
+        10: ["1"],
+        11: ["1"],
+        12: ["1"],
+        13: ["1"],
+        14: ["3", "2"],
+        15: ["2"],
+        16: ["2", "1"],
+        17: ["3"],
+        18: ["2"],
+        19: ["2"],
+        20: ["3"],
+        21: ["2"],
+        22: ["1"],
+        23: ["4", "1"],
+        24: ["2"],
+        25: ["2"],
+        26: ["1"],
+        27: ["2"],
+        28: ["2"],
+        29: ["3"],
+        30: ["3", "1"],
+        31: ["1"],
+        32: ["3", "1"],
+        33: ["3", "2"],
+        34: ["2"],
+        35: ["3"],
+        36: ["2"],
+        37: ["3"],
+        38: ["3"],
+        39: ["2"],
+        40: ["1"]
+        },
+      3: {
+        1: ["2"],
+        2: ["2"],
+        3: ["2"], 
+        4: ["2"], 
+        5: ["2", "3"],
+        6: ["1", "2"], 
+        7: ["2"], 
+        8: ["2"], 
+        9: ["1"], 
+        10: ["2", "3"],
+        11: ["1"], 
+        12: ["1", "3"], 
+        13: ["2"], 
+        14: ["2", "3"], 
+        15: ["2"],
+        16: ["2"], 
+        17: ["1", "2"], 
+        18: ["2", "3"], 
+        19: ["2", "3"], 
+        20: ["1", "3"],
+        21: ["2", "3"], 
+        22: ["3"], 
+        23: ["1", "3"], 
+        24: ["1", "3"], 
+        25: ["1", "3"],
+        26: ["1", "3"], 
+        27: ["3"], 
+        28: ["1", "2"], 
+        29: ["1", "4"], 
+        30: ["2"],
+        31: ["1", "4"], 
+        32: ["1"], 
+        33: ["2", "3"], 
+        34: ["2"], 
+        35: ["1", "2", "4"],
+        36: ["1"], 
+        37: ["3"], 
+        38: ["2"], 
+        39: ["2"], 
+        40: ["2"]
+        }, 
+      
+      4: {
+        1: ["2"], 
+        2: ["2"], 
+        3: ["2"], 
+        4: ["2"], 
+        5: ["1"],
+        6: ["1"], 
+        7: ["1"], 
+        8: ["1"], 
+        9: ["2", "4"], 
+        10: ["1", "3", "4"],
+        11: ["2", "3"], 
+        12: ["2", "3"], 
+        13: ["2", "3"], 
+        14: ["1"], 
+        15: ["1", "2"],
+        16: ["2", "4"], 
+        17: ["1"], 
+        18: ["2", "3"], 
+        19: ["2"], 
+        20: ["2"],
+        21: ["1"], 
+        22: ["3"], 
+        23: ["1", "3"], 
+        24: ["2", "3"], 
+        25: ["1", "4"],
+        26: ["2"], 
+        27: ["2"], 
+        28: ["2"], 
+        29: ["1"], 
+        30: ["1"],
+        31: ["1"], 
+        32: ["2"], 
+        33: ["1"], 
+        34: ["2"], 
+        35: ["2"],
+        36: ["1"], 
+        37: ["2"], 
+        38: ["1"], 
+        39: ["1"], 
+        40: ["1"]
+        },
+      5: {
+        1: ["2", "3"], 
+        2: ["1", "4"], 
+        3: ["2"], 
+        4: ["2"], 
+        5: ["2"],
+        6: ["2", "3"], 
+        7: ["2", "3"], 
+        8: ["2"], 
+        9: ["2"], 
+        10: ["1", "3"],
+        11: ["1", "3"], 
+        12: ["1", "2"], 
+        13: ["1", "3"], 
+        14: ["2"], 
+        15: ["1"],
+        16: ["2"], 
+        17: ["2", "3"], 
+        18: ["1"], 
+        19: ["2"], 
+        20: ["2"],
+        21: ["1"], 
+        22: ["1"], 
+        23: ["1"], 
+        24: ["1"], 
+        25: ["2"],
+        26: ["2"], 
+        27: ["2"], 
+        28: ["2"], 
+        29: ["1"], 
+        30: ["1", "3"],
+        31: ["2"], 
+        32: ["2", "3"], 
+        33: ["2"], 
+        34: ["2"], 
+        35: ["1", "2"],
+        36: ["2"], 
+        37: ["2"], 
+        38: ["2"], 
+        39: ["2", "3"], 
+        40: ["2", "3"]
+        },
+      6: {
+        1: ["3", "1"], 
+        2: ["2"], 
+        3: ["2"], 
+        4: ["4", "3", "2"], 
+        5: ["1"], 
+        6: ["3", "1"],
+        7: ["1"], 
+        8: ["1"], 
+        9: ["1"], 
+        10: ["3", "2"], 
+        11: ["1"], 
+        12: ["1"],
+        13: ["1"], 
+        14: ["2"], 
+        15: ["2"], 
+        16: ["2"], 
+        17: ["3", "2"], 
+        18: ["3"],
+        19: ["1"], 
+        20: ["3", "2"], 
+        21: ["1"], 
+        22: ["4", "2"], 
+        23: ["3", "2"], 
+        24: ["2"],
+        25: ["3", "1"], 
+        26: ["4", "3", "2"], 
+        27: ["4", "1"], 
+        28: ["2"], 
+        29: ["4", "1"], 
+        30: ["1"],
+        31: ["2"], 
+        32: ["2"], 
+        33: ["2"], 
+        34: ["2"], 
+        35: ["2"], 
+        36: ["1"],
+        37: ["2"], 
+        38: ["3", "2"], 
+        39: ["1"], 
+        40: ["3"]
+        },
+      7: {
+        1: ["2"], 
+        2: ["1"], 
+        3: ["1"], 
+        4: ["3", "1"], 
+        5: ["3", "1"], 
+        6: ["3", "1"],
+        7: ["2"], 
+        8: ["3"], 
+        9: ["1", "4"], 
+        10: ["2"], 
+        11: ["3", "1"], 
+        12: ["4", "1"],
+        13: ["2"], 
+        14: ["1"], 
+        15: ["2"], 
+        16: ["2"], 
+        17: ["1"], 
+        18: ["1"],
+        19: ["2"], 
+        20: ["2"], 
+        21: ["1"], 
+        22: ["2"], 
+        23: ["1"], 
+        24: ["2"],
+        25: ["2"], 
+        26: ["1"], 
+        27: ["2"], 
+        28: ["2"], 
+        29: ["2"], 
+        30: ["1"],
+        31: ["2"], 
+        32: ["2"], 
+        33: ["3", "2", "1"], 
+        34: ["4", "2"], 
+        35: ["4", "3", "2"],
+        36: ["2"], 
+        37: ["3", "2", "1"], 
+        38: ["2"], 
+        39: ["4", "1"], 
+        40: ["2"]    
+        },
+
+      8: {
+          1: ["2"], 
+          2: ["2"], 
+          3: ["2"], 
+          4: ["2"], 
+          5: ["1"], 
+          6: ["2"],
+          7: ["1"], 
+          8: ["2"], 
+          9: ["1"], 
+          10: ["2"], 
+          11: ["2"], 
+          12: ["3", "2"],
+          13: ["1"], 
+          14: ["2"], 
+          15: ["2"], 
+          16: ["3"], 
+          17: ["2"], 
+          18: ["2"],
+          19: ["2"], 
+          20: ["3", "2"], 
+          21: ["2"], 
+          22: ["4", "1"], 
+          23: ["3", "1"], 
+          24: ["2"],
+          25: ["2"], 
+          26: ["3", "1"], 
+          27: ["2"], 
+          28: ["3", "2"], 
+          29: ["4", "3", "2"], 
+          30: ["2"],
+          31: ["1", "3"], 
+          32: ["2"], 
+          33: ["2"], 
+          34: ["2"], 
+          35: ["2"], 
+          36: ["2"],
+          37: ["1", "4"], 
+          38: ["2"], 
+          39: ["3", "2"], 
+          40: ["1"]
+          },
+      9: {
+          1: ["2"], 
+          2: ["1", "3"], 
+          3: ["4", "2", "1"], 
+          4: ["2"], 
+          5: ["4", "1"], 
+          6: ["2"],
+          7: ["1"], 
+          8: ["2"], 
+          9: ["3"], 
+          10: ["1"], 
+          11: ["1"], 
+          12: ["1"],
+          13: ["2"], 14: ["2"], 15: ["2"], 16: ["3", "1"], 17: ["2"], 18: ["4", "2"],
+          19: ["4", "2"], 20: ["2"], 21: ["1"], 22: ["2"], 23: ["2"], 24: ["3"],
+          25: ["2"], 26: ["3", "2"], 27: ["1"], 28: ["1"], 29: ["2"], 30: ["1"],
+          31: ["1"], 32: ["2", "1"], 33: ["1"], 34: ["3", "2"], 35: ["4", "3", "1"], 36: ["3", "2"],
+          37: ["1"], 38: ["2"], 39: ["3", "2"], 40: ["2"]
+          },
+      10: {
+          1: ["2"], 2: ["3"], 3: ["1"], 4: ["2"], 5: ["2"], 6: ["3", "1"],
+          7: ["3"], 8: ["3"], 9: ["3", "2"], 10: ["1"], 11: ["4", "1"], 12: ["1"],
+          13: ["2"], 14: ["2"], 15: ["2"], 16: ["1"], 17: ["2"], 18: ["4", "3", "2"],
+          19: ["3"], 20: ["3", "1"], 21: ["3"], 22: ["3", "1"], 23: ["1"], 24: ["2"],
+          25: ["1"], 26: ["4", "1"], 27: ["2"], 28: ["3"], 29: ["3", "1"], 30: ["3", "2", "1"],
+          31: ["1"], 32: ["2", "1"], 33: ["3"], 34: ["2"], 35: ["2", "1"], 36: ["2", "1"],
+          37: ["2"], 38: ["1"], 39: ["2"], 40: ["2"]
+          },
+      11: {
+          1: ["4", "1"], 2: ["2", "3"], 3: ["3"], 4: ["2"], 5: ["2"], 6: ["2"],
+          7: ["3", "1"], 8: ["1"], 9: ["1"], 10: ["2"], 11: ["1"], 12: ["1"],
+          13: ["1"], 14: ["3", "2", "1"], 15: ["3", "1"], 16: ["4", "1"], 17: ["1"], 18: ["4", "2"],
+          19: ["2"], 20: ["3", "2"], 21: ["2", "1"], 22: ["3", "1"], 23: ["3"], 24: ["2"],
+          25: ["2"], 26: ["2"], 27: ["3", "1"], 28: ["1"], 29: ["1"], 30: ["2"],
+          31: ["1"], 32: ["2"], 33: ["3", "2"], 34: ["3", "2"], 35: ["1"], 36: ["4", "3", "2"],
+          37: ["2"], 38: ["2"], 39: ["1"], 40: ["4", "1"]
+          }, 
+      12: {
+          1: ["3", "2"], 2: ["3"], 3: ["1"], 4: ["2"], 5: ["2", "1"], 6: ["2"],
+          7: ["3", "2"], 8: ["3", "1"], 9: ["3", "2"], 10: ["1"], 11: ["1"], 12: ["2"],
+          13: ["2"], 14: ["2"], 15: ["2", "1"], 16: ["2"], 17: ["3", "2"], 18: ["2"],
+          19: ["2"], 20: ["1"], 21: ["3"], 22: ["1"], 23: ["3"], 24: ["2"],
+          25: ["1"], 26: ["3"], 27: ["2"], 28: ["4", "1"], 29: ["4", "1"], 30: ["2"],
+          31: ["2"], 32: ["3", "2"], 33: ["2", "1"], 34: ["2"], 35: ["1"], 36: ["4", "1"],
+          37: ["2"], 38: ["3", "2"], 39: ["1"], 40: ["2", "1"]
+          },
+      13: {
+        1: ["1"], 2: ["2"], 3: ["3", "2"], 4: ["2"], 5: ["3", "2"], 6: ["2"],
+        7: ["2"], 8: ["3", "2"], 9: ["4", "1"], 10: ["2"], 11: ["1"], 12: ["2"],
+        13: ["2"], 14: ["2"], 15: ["2"], 16: ["1"], 17: ["2"], 18: ["1"],
+        19: ["2"], 20: ["2"], 21: ["2"], 22: ["3"], 23: ["1"], 24: ["1"],
+        25: ["1"], 26: ["3"], 27: ["2"], 28: ["2", "1"], 29: ["2"], 30: ["2"],
+        31: ["3", "1"], 32: ["3", "2"], 33: ["2", "1"], 34: ["2", "1"], 35: ["4", "3", "2"], 36: ["2"],
+        37: ["4", "2", "1"], 38: ["1"], 39: ["2"], 40: ["1"]
+          }, 
+      14: {
+        1: ["3"], 2: ["1"], 3: ["3", "1"], 4: ["2"], 5: ["2"], 6: ["3", "1"],
+        7: ["2"], 8: ["3", "2"], 9: ["4", "1"], 10: ["2"], 11: ["3"], 12: ["3", "2"],
+        13: ["3"], 14: ["3", "1"], 15: ["1"], 16: ["3", "2", "1"], 17: ["2"], 18: ["3", "1"],
+        19: ["2"], 20: ["1"], 21: ["2"], 22: ["1"], 23: ["1"], 24: ["2"],
+        25: ["1"], 26: ["1"], 27: ["2"], 28: ["1"], 29: ["1"], 30: ["2"],
+        31: ["1"], 32: ["1"], 33: ["1"], 34: ["3", "2"], 35: ["1"], 36: ["1"],
+        37: ["1"], 38: ["3", "2"], 39: ["4", "1"], 40: ["3", "2"]
+          }, 
+      15: {
+        1: ["3", "2"], 2: ["4", "1"], 3: ["2"], 4: ["2"], 5: ["2"], 6: ["2"],
+        7: ["2"], 8: ["3"], 9: ["2"], 10: ["2"], 11: ["1"], 12: ["4", "3", "2"],
+        13: ["1"], 14: ["2"], 15: ["2"], 16: ["1"], 17: ["2"], 18: ["3", "1"],
+        19: ["2"], 20: ["1"], 21: ["2"], 22: ["4", "3", "1"], 23: ["2"], 24: ["3"],
+        25: ["1"], 26: ["1"], 27: ["3", "2"], 28: ["3", "1"], 29: ["3"], 30: ["1"],
+        31: ["1"], 32: ["2"], 33: ["1"], 34: ["2"], 35: ["2"], 36: ["2"],
+        37: ["2"], 38: ["3", "1"], 39: ["3", "2", "1"], 40: ["2"]
+          },                                                       
+      16: {
+        1: ["3", "2"], 2: ["1"], 3: ["2"], 4: ["1"], 5: ["1"], 6: ["1"],
+        7: ["2"], 8: ["2"], 9: ["2"], 10: ["2"], 11: ["2"], 12: ["2"],
+        13: ["1"], 14: ["2", "1"], 15: ["3"], 16: ["1"], 17: ["2"], 18: ["2"],
+        19: ["2"], 20: ["2"], 21: ["1"], 22: ["2"], 23: ["1"], 24: ["2"],
+        25: ["2", "1"], 26: ["3", "2", "1"], 27: ["4", "2"], 28: ["3", "2"],
+        29: ["1"], 30: ["1"], 31: ["2"], 32: ["4", "1"], 33: ["1"], 34: ["1"],
+        35: ["3"], 36: ["2"], 37: ["2"], 38: ["3"], 39: ["1"], 40: ["1"]
+          },
+      17: {
+        1: ["3", "2"], 2: ["2", "1"], 3: ["2"], 4: ["3", "1"], 5: ["2"], 6: ["2"],
+        7: ["2"], 8: ["1"], 9: ["2"], 10: ["1", "2"], 11: ["1"], 12: ["3", "1"],
+        13: ["2"], 14: ["2"], 15: ["4", "1"], 16: ["2"], 17: ["4", "1"], 18: ["3", "2"],
+        19: ["3", "1"], 20: ["1"], 21: ["1"], 22: ["2"], 23: ["2", "1"], 24: ["3", "1"],
+        25: ["1"], 26: ["3", "2"], 27: ["2"], 28: ["1"], 29: ["2"], 30: ["2", "1"],
+        31: ["4", "3", "2"], 32: ["2"], 33: ["2"], 34: ["3", "2"], 35: ["4", "1"],
+        36: ["2"], 37: ["3", "2"], 38: ["3", "1"], 39: ["1"], 40: ["3"]
+          },
+      18: {
+        1: ["2"], 2: ["3"], 3: ["2"], 4: ["2"], 5: ["1"], 6: ["1"],
+        7: ["3", "1"], 8: ["2"], 9: ["2"], 10: ["1"], 11: ["1"], 12: ["3", "2"],
+        13: ["3", "2"], 14: ["3", "2"], 15: ["2"], 16: ["1"], 17: ["2"], 18: ["2"],
+        19: ["2"], 20: ["3", "1"], 21: ["2"], 22: ["2"], 23: ["1"], 24: ["2"],
+        25: ["4", "2"], 26: ["3"], 27: ["2"], 28: ["2"], 29: ["3"], 30: ["1"],
+        31: ["2"], 32: ["1"], 33: ["2"], 34: ["1"], 35: ["2"], 36: ["2"],
+        37: ["1"], 38: ["3"], 39: ["2"], 40: ["4", "2", "1"]
+          },
+      19: {
+        1: ["2"], 2: ["1"], 3: ["2"], 4: ["2"], 5: ["3", "1"], 6: ["3", "1"],
+        7: ["2"], 8: ["2"], 9: ["2"], 10: ["2"], 11: ["2"], 12: ["3", "1"],
+        13: ["2"], 14: ["4", "3", "2"], 15: ["1"], 16: ["1"], 17: ["4", "1"], 18: ["1"],
+        19: ["2"], 20: ["2"], 21: ["2"], 22: ["2"], 23: ["2"], 24: ["1"],
+        25: ["1"], 26: ["1"], 27: ["2"], 28: ["2"], 29: ["1"], 30: ["1"],
+        31: ["1"], 32: ["3"], 33: ["2"], 34: ["1"], 35: ["3"], 36: ["1"],
+        37: ["2"], 38: ["2"], 39: ["1"], 40: ["1"]
+          }, 
+      20: {
+        1: ["1"], 2: ["1"], 3: ["4", "1"], 4: ["2"], 5: ["4", "2", "1"], 6: ["2"],
+        7: ["3"], 8: ["4", "1"], 9: ["1"], 10: ["3"], 11: ["2"], 12: ["1"],
+        13: ["1"], 14: ["1"], 15: ["2"], 16: ["2"], 17: ["2"], 18: ["3", "2"],
+        19: ["1"], 20: ["2", "1"], 21: ["3"], 22: ["3", "2"], 23: ["2"], 24: ["2", "1"],
+        25: ["2"], 26: ["3", "1"], 27: ["1"], 28: ["3", "2"], 29: ["1"], 30: ["1"],
+        31: ["1"], 32: ["2"], 33: ["3", "1"], 34: ["2", "1"], 35: ["2"], 36: ["1"],
+        37: ["2"], 38: ["3"], 39: ["1"], 40: ["3", "2"]
+          },
+    
+      // Add                               
+      // Add correct answers for series 3-26 following the same pattern
+      // ...
+      21: {
+        1: ["1"], 2: ["4", "1"], 3: ["1"], 4: ["4", "1"], 5: ["2"], 6: ["2"],
+        7: ["2"], 8: ["3", "1"], 9: ["1"], 10: ["2"], 11: ["1"], 12: ["2"],
+        13: ["2"], 14: ["1"], 15: ["1"], 16: ["3", "1"], 17: ["2"], 18: ["2"],
+        19: ["2"], 20: ["1"], 21: ["1"], 22: ["2"], 23: ["2"], 24: ["3", "2"],
+        25: ["2"], 26: ["1"], 27: ["2"], 28: ["1"], 29: ["3", "1"], 30: ["1"],
+        31: ["2"], 32: ["1"], 33: ["4", "1"], 34: ["1"], 35: ["2"], 36: ["2"],
+        37: ["2"], 38: ["2"], 39: ["3", "2"], 40: ["2", "1"]
+        },
+    22: {
+      1: ["1"], 2: ["1"], 3: ["1"], 4: ["1"], 5: ["1"], 6: ["1"],
+      7: ["1"], 8: ["1"], 9: ["1"], 10: ["1"], 11: ["1"], 12: ["1"],
+      13: ["1"], 14: ["1"], 15: ["1"], 16: ["1"], 17: ["1"], 18: ["1"],
+      19: ["1"], 20: ["1"], 21: ["1"], 22: ["1"], 23: ["1"], 24: ["1"],
+      25: ["1"], 26: ["1"], 27: ["1"], 28: ["1"], 29: ["1"], 30: ["1"],
+      31: ["1"], 32: ["1"], 33: ["1"], 34: ["1"], 35: ["1"], 36: ["1"],
+      37: ["1"], 38: ["1"], 39: ["1"], 40: ["1"]
+      },
+    23: {
+      1: ["1"], 2: ["1"], 3: ["1"], 4: ["1"], 5: ["1"], 6: ["1"],
+      7: ["1"], 8: ["1"], 9: ["1"], 10: ["1"], 11: ["1"], 12: ["1"],
+      13: ["1"], 14: ["1"], 15: ["1"], 16: ["1"], 17: ["1"], 18: ["1"],
+      19: ["1"], 20: ["1"], 21: ["1"], 22: ["1"], 23: ["1"], 24: ["1"],
+      25: ["1"], 26: ["1"], 27: ["1"], 28: ["1"], 29: ["1"], 30: ["1"],
+      31: ["1"], 32: ["1"], 33: ["1"], 34: ["1"], 35: ["1"], 36: ["1"],
+      37: ["1"], 38: ["1"], 39: ["1"], 40: ["1"]
+      },
+    24: {
+      1: ["1"], 2: ["1"], 3: ["1"], 4: ["1"], 5: ["1"], 6: ["1"],
+      7: ["1"], 8: ["1"], 9: ["1"], 10: ["1"], 11: ["1"], 12: ["1"],
+      13: ["1"], 14: ["1"], 15: ["1"], 16: ["1"], 17: ["1"], 18: ["1"],
+      19: ["1"], 20: ["1"], 21: ["1"], 22: ["1"], 23: ["1"], 24: ["1"],
+      25: ["1"], 26: ["1"], 27: ["1"], 28: ["1"], 29: ["1"], 30: ["1"],
+      31: ["1"], 32: ["1"], 33: ["1"], 34: ["1"], 35: ["1"], 36: ["1"],
+      37: ["1"], 38: ["1"], 39: ["1"], 40: ["1"]
+      },
+    25: {
+      1: ["1"], 2: ["1"], 3: ["1"], 4: ["1"], 5: ["1"], 6: ["1"],
+      7: ["1"], 8: ["1"], 9: ["1"], 10: ["1"], 11: ["1"], 12: ["1"],
+      13: ["1"], 14: ["1"], 15: ["1"], 16: ["1"], 17: ["1"], 18: ["1"],
+      19: ["1"], 20: ["1"], 21: ["1"], 22: ["1"], 23: ["1"], 24: ["1"],
+      25: ["1"], 26: ["1"], 27: ["1"], 28: ["1"], 29: ["1"], 30: ["1"],
+      31: ["1"], 32: ["1"], 33: ["1"], 34: ["1"], 35: ["1"], 36: ["1"],
+      37: ["1"], 38: ["1"], 39: ["1"], 40: ["1"]
+      },
+    26: {
+      1: ["1"], 2: ["1"], 3: ["1"], 4: ["1"], 5: ["1"], 6: ["1"],
+      7: ["1"], 8: ["1"], 9: ["1"], 10: ["1"], 11: ["1"], 12: ["1"],
+      13: ["1"], 14: ["1"], 15: ["1"], 16: ["1"], 17: ["1"], 18: ["1"],
+      19: ["1"], 20: ["1"], 21: ["1"], 22: ["1"], 23: ["1"], 24: ["1"],
+      25: ["1"], 26: ["1"], 27: ["1"], 28: ["1"], 29: ["1"], 30: ["1"],
+      31: ["1"], 32: ["1"], 33: ["1"], 34: ["1"], 35: ["1"], 36: ["1"],
+      37: ["1"], 38: ["1"], 39: ["1"], 40: ["1"]
+      }     
+        };
+
+    const translations = {
+      fr: {
+        title: "Test 40 questions",
+        showResults: "Maj/Affichage des résultats",
+        resultTitle: "Vos réponses :",
+        response: "Réponse",
+        markError: "Marquer faux",
+        markedError: "Marqué faux",
+        score: "Résultat",
+        scroll: "🔄 Résultats",
+        noAnswer: "Aucune",
+        Reset: "Réinitialiser",
+        selectSeries: "Sélectionnez une série (1-26)",
+        correctAnswer: "Réponse correcte",
+        currentSeries: "Série"
+      },
+      ar: {
+        title: "اختبار 40 سؤال",
+        showResults: "إظهار/تحديث النتائج",
+        resultTitle: "إجاباتك:",
+        response: "إجابة",
+        markError: "وضع علامة كخطأ",
+        markedError: "تم وضع علامة كخطأ",
+        score: "النتيجة",
+        scroll: "🔄 عرض النتائج",
+        noAnswer: "بدون",
+        Reset: "إعادة ضبط",
+        selectSeries: "اختر سلسلة (1-26)",
+        correctAnswer: "الجواب الصحيح",
+        currentSeries: "السلسلة"
+      }
+    };
+
+    function collectSelections() {
+      const selections = {};
+      document.querySelectorAll('.options').forEach(group => {
+        const questionNum = group.dataset.question;
+        const selected = [...group.querySelectorAll('.selected')].map(opt => opt.dataset.value);
+        selections[questionNum] = selected;
+      });
+      return selections;
+    }
+
+    function showResults() {
+      resultsDisplayed = true;
+      document.getElementById("sticky-score").style.display = 'block';
+      const resultsContainer = document.getElementById("results");
+    resultsContainer.style.display = 'block'; // Add this line    
+      resultsContainer.innerHTML = `<h2>${translations[currentLang].resultTitle}</h2>`;
+
+      const resultsList = document.createElement('div');
+      resultsList.id = 'results-list';
+
+      let correctCount = 0;
+      let answeredCount = 0;
+
+      for (let i = 1; i <= totalQuestions; i++) {
+        const optionsDiv = document.querySelector(`.options[data-question="${i}"]`);
+        const selected = [...optionsDiv.querySelectorAll('.selected')].map(opt => opt.dataset.value);
+        const correct = correctAnswers[currentSeries][i] || [];
+
+        // Strict comparison - answers must exactly match the correct ones
+        const isCorrect = JSON.stringify(selected.sort()) === JSON.stringify(correct.sort());
+        if (selected.length > 0) {
+          answeredCount++;
+          if (isCorrect) correctCount++;
+        }
+
+        const isError = errorMarkers[i] || false;
+        
+        const questionResult = document.createElement('div');
+        questionResult.classList.add('result-item');
+        questionResult.setAttribute('data-question', i);
+        questionResult.innerHTML = `
+          <span>
+            <strong>${currentLang === "ar" ? "السؤال" : "Question"} ${i}:</strong><br>
+            ${currentLang === "ar" ? "إجابة" : "Réponse"} : 
+            ${selected.length > 0 
+              ? `<span class="response-value ${isCorrect ? 'correct' : 'incorrect'}">${selected.join(', ')}</span>` 
+              : translations[currentLang].noAnswer
+            }<br>
+            ${translations[currentLang].correctAnswer}: 
+            <span class="correct-answer">${correct.join(', ')}</span>
+          </span>
+          <button class="error-btn ${isError ? 'active' : ''}" data-question="${i}">
+            ${isError ? translations[currentLang].markedError : translations[currentLang].markError}
+          </button>
+        `;
+        resultsList.appendChild(questionResult);
+      }
+
+      resultsContainer.appendChild(resultsList);
+
+      const scoreDisplay = document.createElement('div');
+      scoreDisplay.id = "score";
+      scoreDisplay.classList.add("score");
+      scoreDisplay.textContent = 
+        `${translations[currentLang].score}: ${correctCount}/${answeredCount}`;
+      resultsContainer.appendChild(scoreDisplay);
+
+      // Update sticky score
+      const stickyScore = document.getElementById("sticky-score");
+      if (answeredCount > 0) {
+        stickyScore.textContent = `${currentLang === "ar" ? "النتيجة: " : "RESULTAT: "}${correctCount}/${answeredCount}`;
+        stickyScore.style.display = 'block';
+      } else {
+        stickyScore.style.display = 'none';
+      }
+
+      document.querySelectorAll('.error-btn').forEach(button => {
+        button.addEventListener('click', function() {
+          const questionNum = this.dataset.question;
+          errorMarkers[questionNum] = !errorMarkers[questionNum];
+          this.classList.toggle('active');
+          this.textContent = this.classList.contains('active') 
+            ? translations[currentLang].markedError 
+            : translations[currentLang].markError;
+          updateScore();
+        });
+      });
+    }
+
+    function updateScore() {
+      const resultsContainer = document.getElementById("results");
+      const scoreDisplay = document.getElementById("score");
+      const stickyScore = document.getElementById("sticky-score");
+
+      let answeredCount = 0;
+      let errorCount = 0;
+
+      for (let i = 1; i <= totalQuestions; i++) {
+        const optionsDiv = document.querySelector(`.options[data-question="${i}"]`);
+        const selected = [...optionsDiv.querySelectorAll('.selected')].map(opt => opt.dataset.value);
+        const correct = correctAnswers[currentSeries][i] || [];
+        const isCorrect = JSON.stringify(selected.sort()) === JSON.stringify(correct.sort());
+
+        if (selected.length > 0) {
+          answeredCount++;
+          if (errorMarkers[i] || !isCorrect) {
+            errorCount++;
+          }
+        }
+      }
+
+      if (answeredCount > 0) {
+        const correctCount = answeredCount - errorCount;
+        const scoreText = `${correctCount}/${answeredCount}`;
+
+        if (scoreDisplay) {
+          scoreDisplay.textContent = 
+            `${translations[currentLang].score}: ${scoreText}`;
+        }
+
+        if (stickyScore) {
+          stickyScore.textContent = `${currentLang === "ar" ? "النتيجة: " : "RESULTAT: "}${scoreText}`;
+          stickyScore.style.display = 'block';
+        }
+      } else {
+        if (stickyScore) {
+          stickyScore.style.display = 'none';
+        }
+      }
+    }
+
+    function toggleLanguage() {
+      const currentSelections = collectSelections();
+      currentLang = currentLang === "fr" ? "ar" : "fr";
+      document.body.classList.toggle("rtl", currentLang === "ar");
+      document.documentElement.lang = currentLang;
+      renderQuestions(currentSelections);
+      document.getElementById("title").textContent = translations[currentLang].title;
+      document.getElementById("show-results").textContent = translations[currentLang].showResults;
+      document.getElementById("reset-btn").textContent = translations[currentLang].Reset; 
+      document.getElementById("scroll-link").textContent = translations[currentLang].scroll;
+      document.getElementById("series-title").textContent = translations[currentLang].selectSeries;
+
+      // Update current series display if visible
+      const seriesDisplay = document.getElementById("current-series-display");
+      if (seriesDisplay.style.display !== "none") {
+        seriesDisplay.textContent = `${translations[currentLang].currentSeries} ${currentSeries}`;
+      }
+
+      if (resultsDisplayed) {
+        showResults();
+      }
+      if (document.getElementById("results").innerHTML) {
+        updateScore();
+      }
+    }
+
+    function renderQuestions(savedSelections = {}) {
+      container.innerHTML = "";
+      for (let i = 1; i <= totalQuestions; i++) {
+        const question = document.createElement("div");
+        question.classList.add("question");
+        question.innerHTML = `
+          <h2>${currentLang === "ar" ? "السؤال" : "Question"} ${i}</h2>
+          <div class="options" data-question="${i}">
+            <div class="option" data-value="1">${translations[currentLang].response} 1</div>
+            <div class="option" data-value="2">${translations[currentLang].response} 2</div>
+            <div class="option" data-value="3">${translations[currentLang].response} 3</div>
+            <div class="option" data-value="4">${translations[currentLang].response} 4</div>
+          </div>
+        `;
+        container.appendChild(question);
+
+        if (savedSelections[i]) {
+          const optionsDiv = question.querySelector('.options');
+          savedSelections[i].forEach(val => {
+            const option = optionsDiv.querySelector(`.option[data-value="${val}"]`);
+            if (option) option.classList.add('selected');
+          });
+        }
+      }
+
+      document.querySelectorAll(".options").forEach(group => {
+        group.addEventListener("click", e => {
+          if (!e.target.classList.contains("option")) return;
+          e.target.classList.toggle("selected");
+        });
+      });
+    }
+
+    function renderSeriesButtons() {
+      const container = document.getElementById("series-buttons");
+      container.innerHTML = "";
+      
+      for (let i = 1; i <= 26; i++) {
+        const btn = document.createElement("div");
+        btn.className = "series-btn";
+        btn.textContent = i;
+        btn.dataset.series = i;
+        container.appendChild(btn);
+      }
+      
+      document.querySelectorAll(".series-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+          currentSeries = parseInt(this.dataset.series);
+      //to keep next-button visible
+      nextQuestionButton.style.display = 'flex';
+      nextQuestionButton.classList.add('visible');
+      nextQuestionButton.style.opacity = "1";
+      nextQuestionButton.style.visibility = "visible";
+          
+          // Update the current series display
+          const seriesDisplay = document.getElementById("current-series-display");
+          seriesDisplay.textContent = `${translations[currentLang].currentSeries} ${currentSeries}`;
+          seriesDisplay.style.display = "block";
+          
+          document.getElementById("series-selector").style.display = "none";
+          document.getElementById("questions-container").style.display = "block";
+          document.getElementById("show-results").style.display = "block";
+          document.getElementById("scroll-link").style.display = "block";
+          
+          renderQuestions();
+          
+          // Scroll to top of the page
+          window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+          });
+        });
+      });
+    }
+
+    function resetQuiz() {
+      const confirmReset = confirm(currentLang === "ar"
+        ? "هل أنت متأكد أنك تريد مسح كل الإجابات؟"
+        : "Êtes-vous sûr de vouloir réinitialiser toutes les réponses ?");
+
+      if (confirmReset) {
+        document.querySelectorAll(".option").forEach(opt => {
+          opt.classList.remove("selected");
+        });
+        document.getElementById("results").innerHTML = "";
+      document.getElementById("results").style.display = 'none'; // Add this line
+        resultsDisplayed = false;
+        document.getElementById("sticky-score").style.display = 'none';
+        document.getElementById("sticky-score").textContent = '';
+        errorMarkers = {};
+    
+    
+        
+    document.getElementById("series-selector").style.display = "block";
+        document.getElementById("questions-container").style.display = "none";
+        document.getElementById("show-results").style.display = "none";
+        document.getElementById("scroll-link").style.display = "none";
+        document.getElementById("current-series-display").style.display = "none";
+        document.getElementById("reset-btn").style.display = "none"; // Hide the reset button  
+      
+    // Completely reset the next-question button
+    nextQuestionButton.style.display = "none";
+    nextQuestionButton.classList.remove('visible');
+    nextQuestionButton.style.opacity = "0";
+    nextQuestionButton.style.visibility = "hidden"; 
+        
+    window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
+  // Initialize the app
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize the button reference
+  nextQuestionButton = document.getElementById('next-question');
+    
+  // Set Arabic as default language
+    document.body.classList.add("rtl");
+    document.documentElement.lang = "ar";
+    document.getElementById("title").textContent = translations[currentLang].title;
+    document.getElementById("show-results").textContent = translations[currentLang].showResults;    
+
+    renderSeriesButtons();
+    
+    document.getElementById("show-results").addEventListener("click", () => {
+        resultsDisplayed = true;
+        document.getElementById("results").style.display = 'block';      
+        showResults();
+    });
+    
+    document.getElementById("reset-btn").addEventListener("click", function() {
+        resetQuiz();
+        this.style.display = "none"; // Hide the button immediately after click     
+    });
+
+    const goTopButton = document.getElementById('go-top');
+    const resetStickButton = document.getElementById('reset-btn-stick');
+
+    function getCurrentQuestionInView() {
+        const questions = document.querySelectorAll('.question');
+        const scrollPosition = window.scrollY + (window.innerHeight / 3);
+        
+        for (let i = 0; i < questions.length; i++) {
+            const rect = questions[i].getBoundingClientRect();
+            const questionTop = rect.top + window.scrollY;
+            const questionBottom = questionTop + rect.height;
+            
+            if (scrollPosition >= questionTop && scrollPosition <= questionBottom) {
+                return i + 1; // Questions are 1-based
+            }
+        }
+        return 1; // Default to first question if none found
+    }
+
+  nextQuestionButton.addEventListener('click', function() {
+      const currentQuestion = getCurrentQuestionInView();
+      const nextQuestion = Math.min(currentQuestion + 1, totalQuestions);
+      const questionElement = document.querySelector(`.question:nth-child(${nextQuestion})`);
+
+      if (questionElement) {
+        // Calculate the offset needed to account for sticky elements
+        const stickyOffset = 40; // Adjust this value as needed
+        const elementPosition = questionElement.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - stickyOffset;
+
+        window.scrollTo({ 
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    });
+
+    // Show/hide next question button based on scroll
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+            nextQuestionButton.classList.add('visible');
+            goTopButton.classList.add('visible');
+        } else {
+            //nextQuestionButton.classList.remove('visible');
+            goTopButton.classList.remove('visible');
+        }
+        
+        // Hide next button if we're at the last question
+        const currentQuestion = getCurrentQuestionInView();
+//        if (currentQuestion >= totalQuestions) {
+//            nextQuestionButton.style.display = 'none';
+//        } else {
+//            nextQuestionButton.style.display = 'flex';
+//        }
+    });
+
+    // Show the button when questions are loaded
+    document.querySelectorAll('.series-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            setTimeout(() => {
+                nextQuestionButton.style.display = 'flex';
+            }, 500);
+        });
+    });
+    
+    goTopButton.addEventListener('click', function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+
+    resetStickButton.addEventListener('click', function() {
+        resetQuiz();
+    });
+
+    document.getElementById("scroll-link").addEventListener("click", function(e) {
+        e.preventDefault();
+        resultsDisplayed = true;
+        document.getElementById("results").style.display = 'block';      
+        showResults();
+        document.getElementById("reset-btn").style.display = "block"; // Show the reset button
+        document.getElementById("results").scrollIntoView({ behavior: 'smooth' });
+    });
+});
+  </script>
+</body>
+</html>

@@ -82,7 +82,7 @@
     toggleBtn.addEventListener('click', () => {
       if (currentLang === 'ar') {
         // Switch to French
-        button1.textContent = 'Tests avec corrigés <br>(26 séries)';
+        button1.innerHTML = 'Tests avec corrigés <br>(26 séries)';
         button2.textContent = 'Test sans corrigé';
         toggleBtn.textContent = '🇲🇦';
         htmlEl.lang = 'fr';
@@ -91,7 +91,7 @@
         titleEl.textContent = 'Choix du Test'; // French page title
       } else {
         // Switch to Arabic
-        button1.textContent = 'اختبار مع التصحيح <br> (26 سلسلة)';
+        button1.innerHTML = 'اختبار مع التصحيح <br> (26 سلسلة)';
         button2.textContent = 'اختبار بدون تصحيح';
         toggleBtn.textContent = '🇫🇷';
         htmlEl.lang = 'ar';
